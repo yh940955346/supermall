@@ -23,11 +23,6 @@ export default {
   line-height: 44px;
   text-align: center;
   box-shadow: 0 1px 5px rgba(100, 100, 100, 0.3);
-  /* position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  margin: auto; */
   /* background-color: rgb(240, 230, 221); */
 }
 .left, .right {
