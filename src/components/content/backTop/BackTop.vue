@@ -11,12 +11,6 @@ export default {
     return {
     }
   },
-  props:{
-      position:{
-        type: Number,
-        default: 0
-      }
-  },
   methods: {
 
   },

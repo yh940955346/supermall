@@ -3,8 +3,8 @@
   <div class="recommends">
     <div class="recommends-item" v-for="item in recommends" :key="item.index">
       <a :href="item.link">
-        <img :src="item.image" alt="">
-        <div>{{item.title}}</div>
+        <img @load="imgLoad" :src="item.image" alt="" />
+        <div>{{ item.title }}</div>
       </a>
     </div>
   </div>
@@ -12,17 +12,26 @@
 
 <script>
 export default {
-  data () {
+  data() {
     return {
-    }
+      load: false,
+    };
   },
-  props:{
+  methods: {
+    imgLoad() {
+      if (!this.load) {
+        this.$emit("recomImgLoad");
+        this.load = true;
+      }
+    },
+  },
+  props: {
     recommends: {
       type: Array,
-      default: []
-    }
-  }
-}
+      default: [],
+    },
+  },
+};
 </script>
 
 <style  scoped>
@@ -33,11 +42,10 @@ export default {
   padding: 10px 0 20px 0;
   border-bottom: 8px solid rgb(250, 237, 237);
 }
-.recommends .recommends-item{
+.recommends .recommends-item {
   flex: 1;
-
 }
-.recommends .recommends-item img{
+.recommends .recommends-item img {
   width: 80%;
   margin-bottom: 5px;
 }

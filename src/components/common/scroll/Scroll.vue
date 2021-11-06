@@ -1,54 +1,66 @@
 <!--  -->
 <template>
-<!-- ref/children -->
+  <!-- ref/children -->
   <div ref="wrapper">
     <div class="content">
       <slot></slot>
-      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import BScroll from "better-scroll"
+import BScroll from "better-scroll";
 export default {
   data() {
     return {
-      scroll: null
+      scroll: null,
     };
   },
-  props:{
-    probeType:{
+  props: {
+    probeType: {
       type: Number,
-      default: 0
+      default: 0,
     },
-    pullUpLoad:{
+    pullUpLoad: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
   mounted() {
     this.scroll = new BScroll(this.$refs.wrapper, {
       probeType: this.probeType,
       pullUpLoad: this.pullUpLoad,
       observeDOM: true,
+      // observeImage: true,
       click: true,
-      tab: true
+      tab: true,
     });
-    this.scroll.on('scroll', (position)=>{
-      this.$emit('scroll', position)
-    });
-    this.scroll.on('pullingUp', () => {
-      this.$emit('pullingUp');
-      this.scroll.finishPullUp().refresh()
-    })
+    if (this.probeType === 2 || this.probeType === 3) {
+      this.scroll.on("scroll", (position) => {
+        this.$emit("scroll", position);
+      });
+    }
+    if (this.pullUpLoad) {
+      this.scroll.on("pullingUp", () => {
+        this.$emit("pullingUp");
+        // this.scroll.finishPullUp();
+      });
+    }
   },
   methods: {
-    scrollTo(x, y, time){
-      this.scroll.scrollTo(x, y, time)
+    scrollTo(x, y, time) {
+      this.scroll && this.scroll.scrollTo(x, y, time);
     },
-    // finishPullUp(){
-    //   this.scroll.finishPullUp()
-    // }
+    finishPullUp() {
+      this.scroll && this.scroll.finishPullUp();
+    },
+    refresh() {
+      this.scroll && this.scroll.refresh();
+      // console.log("刷新了");
+    },
+    getScrollY(){
+      return this.scroll ? this.scroll.y : 0
+    }
   },
 };
 </script>
