@@ -1,7 +1,7 @@
 <!--  -->
 <template>
   <div class="goods-list-item" @click="itemClick">
-    <img @load="imgLoad" :src="goodsItem.show.img" alt="">
+    <img @load="imgLoad" :src="showImg" alt="">
     <div class="goods-info">
       <p>{{goodsItem.title}}</p>
       <span class="price">￥{{goodsItem.price}}</span>
@@ -24,12 +24,25 @@ export default {
       }
     }
   },
+  computed: {
+    showImg(){
+      return this.goodsItem.image || this.goodsItem.show.img
+    }
+  },
   methods: {
     imgLoad(){
+      // 方法1：判断路径发送不同事件
+      // if(this.$route.path.indexOf('/home') !== -1){
+      // this.$bus.$emit('homeImgLoadFinish')
+      // }else if(this.$route.path.indexOf('/detail') !== -1){
+      //   this.$bus.$emit('detailImgLoadFinish')
+      // }
+      // 方法2：通过$off销毁事件
       this.$bus.$emit('imgLoadFinish')
     },
     itemClick(){
-      this.$router.push('/detail/' + this.goodsItem.iid);
+      const id = this.goodsItem.iid ? this.goodsItem.iid : this.goodsItem.shop_id
+      this.$router.push('/detail/' + id);
     }
   },
 }

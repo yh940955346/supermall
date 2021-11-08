@@ -25,7 +25,7 @@
           </div>
       </div>
     </div>
-    <br><br><br><br><br><br><br><br><br><br>
+    <div class="shopInside">进店逛逛</div>
   </div>
 </template>
 
@@ -134,5 +134,15 @@ export default {
 .bac2 {
   color: #fff;
   background-color: rgb(214, 118, 182);
+}
+.shopInside {
+  background-color: aqua;
+  text-align: center;
+  width: 100px;
+  height: 30px;
+  line-height: 30px;
+  border-radius: 5px;
+  font-size: 14px;
+  margin: 10px auto 0 auto;
 }
 </style>

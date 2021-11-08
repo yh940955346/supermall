@@ -69,6 +69,7 @@ export default {
       isFixed: false,
       tabControlTop: 0,
       saveY: 0,
+      refreshListener: null
     };
   },
   computed: {
@@ -86,11 +87,12 @@ export default {
   },
   mounted() {
     const refresh = debounce(this.$refs.scroll.refresh, 100);
+    this.refreshListener = () => {
+      refresh();
+    }
     // 监听goodsListItem的图片加载完成
     // 利用事务总线接收信息
-    this.$bus.$on("imgLoadFinish", () => {
-      refresh();
-    });
+    this.$bus.$on("imgLoadFinish", this.refreshListener);
   },
   // 纪录离开页面的位置，切回时瞬间回到该位置
   activated() {
@@ -99,6 +101,7 @@ export default {
   },
   deactivated() {
     this.saveY = this.$refs.scroll.getScrollY();
+    this.$bus.$off('imgLoadFinish', this.refreshListener)
   },
   methods: {
     // 网络请求相关代码

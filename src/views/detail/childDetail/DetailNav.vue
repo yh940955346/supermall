@@ -29,12 +29,21 @@ export default {
       currentIndex: 0,
     };
   },
+  props: {
+    getPosition: {
+      type: Array,
+      default(){
+        return []
+      }
+    }
+  },
   components: {
     NavBar,
   },
   methods: {
     titleClick(index){
-      this.currentIndex = index
+      this.currentIndex = index;
+      this.$emit('titleClick', index)
     },
     backClick(){
       this.$router.back()
