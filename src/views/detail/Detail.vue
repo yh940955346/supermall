@@ -16,6 +16,9 @@
       <detail-comment-info :commentInfo="commentInfo" ref="comment" />
       <goods-list :goods="goodsRecommend" ref="recommend" />
     </scroll>
+    <back-top v-if="isShow" @click.native="backTop" />
+    <detail-bottom-bar @cartClick="cartClick" />
+    <toast />
   </div>
 </template>
 
@@ -27,10 +30,17 @@ import DetailShopInfo from "./childDetail/DetailShopInfo.vue";
 import DetailGoodsInfo from "./childDetail/DetailGoodsInfo.vue";
 import DetailParamInfo from "./childDetail/DetailParamInfo.vue";
 import DetailCommentInfo from "./childDetail/DetailCommentInfo.vue";
+import DetailBottomBar from "./childDetail/DetailBottomBar.vue"
+
+import BackTop from "components/content/backTop/BackTop"
+import GoodsList from "components/content/goods/GoodsList";
 
 import Scroll from "components/common/scroll/Scroll";
-import GoodsList from "components/content/goods/GoodsList";
 import { debounce } from "common/utils";
+
+import { mapActions } from 'vuex'
+
+import Toast from 'components/common/toast/Toast'
 
 import {
   getDetail,
@@ -56,6 +66,10 @@ export default {
       themeTopYs: [0, null, null, null],
       refresh: null,
       getPosition: null,
+      isShow: false,
+      cart: {},
+      // testShow: false,
+      // message: ''
     };
   },
   // computed: {
@@ -73,6 +87,14 @@ export default {
     DetailParamInfo,
     DetailCommentInfo,
     GoodsList,
+    DetailBottomBar,
+    BackTop,
+    Toast
+  },
+  watch: {
+    '$route' (to, from) {
+      this.$router.go(0)
+    }
   },
   created() {
     this.iid = this.$route.params.iid;
@@ -124,9 +146,11 @@ export default {
     this.refresh = debounce(this.$refs.scroll.refresh, 100);
     // 防抖获取新位置
     this.getPosition = debounce(() => {
+      this.themeTopYs = [0];
       this.themeTopYs[1] = this.$refs.param.$el.offsetTop - 44;
       this.themeTopYs[2] = this.$refs.comment.$el.offsetTop - 44;
       this.themeTopYs[3] = this.$refs.recommend.$el.offsetTop - 44;
+      this.themeTopYs.push(Number.MAX_VALUE) 
     }, 100);
   },
   // 方法2：刷新得到$el的offsetTop --- $el.offsetTop值不对，图片没渲染
@@ -141,6 +165,10 @@ export default {
     this.$bus.$off("imgLoadFinish", this.refreshListener);
   },
   methods: {
+    // 通过mapActions获得Actions的方法
+    ...mapActions([
+      'addCart'
+    ]),
     // 防抖函数
     goodsImgLoad() {
       // 防抖刷新
@@ -152,18 +180,25 @@ export default {
     titleClick(index) {
       this.$refs.scroll.scrollTo(0, -this.themeTopYs[index], 1000);
     },
-    // 根据获取的y值改变导航对应标题部分
-    // 方法二：
-    changeNavStyle(position) {
+    changeNavStyle(position) {    
       const Y = -position.y;
-      for (let i = 0; i < 4; i++) {
-        if (
-          this.$refs.detailNav.currentIndex !== i &&
-          ((i < 3 && this.themeTopYs[i] <= Y && Y < this.themeTopYs[i + 1]) ||
-            (i === 3 && this.themeTopYs[i] <= Y))
-        ) {
-          this.$refs.detailNav.currentIndex = i;
-        }
+      // 回到顶部显示及隐藏
+      this.isShow = Y > 1000;
+      // 根据获取的y值改变导航对应标题部分
+      const length = this.themeTopYs.length;
+      for (let i = 0; i < length - 1; i++) {
+        // 方法二：
+        // if (
+        //   this.$refs.detailNav.currentIndex !== i &&
+        //   ((i < 3 && this.themeTopYs[i] <= Y && Y < this.themeTopYs[i + 1]) ||
+        //     (i === 3 && this.themeTopYs[i] <= Y))
+        // ) {
+        //   this.$refs.detailNav.currentIndex = i;
+        // }
+        // 方法三：
+          if(this.$refs.detailNav.currentIndex !== i && this.themeTopYs[i] <= Y && Y <= this.themeTopYs[i + 1]){
+            this.$refs.detailNav.currentIndex = i;
+          }
       }
       // 方法一：
       // if(0 <= Y && Y < this.themeTopYs[1]){
@@ -175,6 +210,29 @@ export default {
       // }else {
       //   this.$refs.detailNav.currentIndex = 3;
       // }
+    },
+    // 返回顶部
+    backTop(){
+      this.$refs.scroll.scrollTo(0, 0, 1000);
+      console.log('我点击了');
+    },
+    cartClick(){
+      this.cart.price = this.goods.realPrice;
+      this.cart.img = this.topImgs[0];
+      this.cart.title = this.goods.title;
+      this.cart.desc = this.goods.desc;
+      this.cart.iid = this.iid;
+      
+      // this.$store.commit('addCart', this.cart)
+
+      // this.$store.dispatch('addCart', this.cart).then(res => console.log(res))
+      // 通过mapActions调用Actions的方法
+      this.addCart(this.cart).then(res => {
+        this.$toast.show(res, 2000)
+        // this.testShow = true;
+        // this.message = res;
+        // setTimeout(() => this.testShow = false, 2000)
+      })
     },
   },
 };
@@ -188,7 +246,7 @@ export default {
   background-color: #fff;
 }
 .content {
-  height: calc(100% - 44px);
+  height: calc(100% - 44px - 49px);
   overflow: hidden;
 }
 </style>
