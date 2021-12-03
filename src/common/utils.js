@@ -5,6 +5,7 @@ export function debounce(func, time) {
     if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
       func.apply(this, arg);
+      console.log('执行了');
     }, time);
   };
 }
@@ -35,3 +36,18 @@ export function debounce(func, time) {
 function padLeftZero (str) {
   return ('00' + str).substr(str.length);
 };
+
+// 节流函数
+export function throttle(func, delay){
+  let pre = 0;
+  return function(){
+    let context = this,
+    args = arguments,
+    now = new Date();
+    if(now - pre > delay){
+      func.apply(context, args);
+      pre = now;
+      // console.log('生效');
+    }
+  }
+}

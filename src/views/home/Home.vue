@@ -122,7 +122,7 @@ export default {
 
         // 调用scroll组件的finishPullUp方法再次请求数据
         this.$refs.scroll.finishPullUp();
-        // this.$refs.scroll.refresh()
+        this.$refs.scroll.refresh()
       });
     },
     changeGoodsType(index) {

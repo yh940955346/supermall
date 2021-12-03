@@ -49,6 +49,8 @@ export default {
     countClick(){
       if(this.cartList.filter(item => item.check).length == 0){
         this.$toast.show('请选择商品')
+      }else {
+        this.$toast.show('功能还在开发中~')
       }
     }
   },

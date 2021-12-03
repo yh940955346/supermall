@@ -1,136 +1,197 @@
 <!--  -->
 <template>
   <div class="category">
-    <div class="wrapper">
-    <ul class="content">
-      <li>1列表</li>
-      <li>2列表</li>
-      <li>3列表</li>
-      <li>4列表</li>
-      <li>5列表</li>
-      <li>6列表</li>
-      <li>7列表</li>
-      <li>8列表</li>
-      <li>9列表</li>
-      <li>10列表</li>
-      <li>11列表</li>
-      <li>12列表</li>
-      <li>13列表</li>
-      <li>14列表</li>
-      <li>15列表</li>
-      <li>16列表</li>
-      <li>17列表</li>
-      <li>18列表</li>
-      <li>19列表</li>
-      <li>20列表</li>
-      <li>21列表</li>
-      <li>22列表</li>
-      <li>23列表</li>
-      <li>24列表</li>
-      <li>25列表</li>
-      <li>26列表</li>
-      <li>27列表</li>
-      <li>28列表</li>
-      <li>29列表</li>
-      <li>30列表</li>
-      <li>31列表</li>
-      <li>32列表</li>
-      <li>33列表</li>
-      <li>34列表</li>
-      <li>35列表</li>
-      <li>36列表</li>
-      <li>37列表</li>
-      <li>38列表</li>
-      <li>39列表</li>
-      <li>40列表</li>
-      <li>41列表</li>
-      <li>42列表</li>
-      <li>43列表</li>
-      <li>44列表</li>
-      <li>45列表</li>
-      <li>46列表</li>
-      <li>47列表</li>
-      <li>48列表</li>
-      <li>49列表</li>
-      <li>50列表</li>
-      <li>51列表</li>
-      <li>52列表</li>
-      <li>53列表</li>
-      <li>54列表</li>
-      <li>55列表</li>
-      <li>56列表</li>
-      <li>57列表</li>
-      <li>58列表</li>
-      <li>59列表</li>
-      <li>60列表</li>
-      <li>61列表</li>
-      <li>62列表</li>
-      <li>63列表</li>
-      <li>64列表</li>
-      <li>65列表</li>
-      <li>66列表</li>
-      <li>67列表</li>
-      <li>68列表</li>
-      <li>69列表</li>
-      <li>70列表</li>
-      <li>71列表</li>
-      <li>72列表</li>
-      <li>73列表</li>
-      <li>74列表</li>
-      <li>75列表</li>
-      <li>76列表</li>
-      <li>77列表</li>
-      <li>78列表</li>
-      <li>79列表</li>
-      <li>80列表</li>
-      <li>81列表</li>
-      <li>82列表</li>
-      <li>83列表</li>
-      <li>84列表</li>
-      <li>85列表</li>
-      <li>86列表</li>
-      <li>87列表</li>
-      <li>88列表</li>
-      <li>89列表</li>
-      <li>90列表</li>
-      <li>91列表</li>
-      <li>92列表</li>
-      <li>93列表</li>
-      <li>94列表</li>
-      <li>95列表</li>
-      <li>96列表</li>
-      <li>97列表</li>
-      <li>98列表</li>
-      <li>99列表</li>
-      <li>100列表</li>
-    </ul>
+    <nav-bar class="category-nav"><div slot="center">商品分类</div></nav-bar>
+    <tab-control
+      @changeGoodsType="changeGoodsType"
+      :titles="['流行', '新款', '精选']"
+      v-show="isFixed"
+      ref="tabControl1"
+      class="tab-flexible"
+    />
+    <div class="container">
+      <scroll class="wrapper nav-side">
+        <category-nav-side @keyChange="keyChange"></category-nav-side>
+      </scroll>
+      <scroll
+        @scroll="contentScroll"
+        ref="scroll"
+        :probe-type="3"
+        class="wrapper goods-category"
+      >
+        <category-goods-content
+          @imgLoaded="imgLoad"
+          ref="goodsCategory"
+        ></category-goods-content>
+        <tab-control
+          @changeGoodsType="changeGoodsType"
+          :titles="['流行', '新款', '精选']"
+          ref="tabControl2"
+        />
+        <goods-list :goods="showGoods" />
+      </scroll>
     </div>
   </div>
 </template>
 
 <script>
-import BScroll from 'better-scroll'
+import Scroll from "components/common/scroll/Scroll";
+import NavBar from "components/common/navbar/NavBar";
+import TabControl from "components/content/tabControl/TabControl";
+import GoodsList from "components/content/goods/GoodsList";
+
+import CategoryNavSide from "./childrenComps/CategoryNavSide.vue";
+import CategoryGoodsContent from "./childrenComps/CategoryGoodsContent.vue";
+
+import { throttle } from "common/utils";
+
+import { getGoodsInfo } from "network/category";
+
 export default {
-  data () {
+  data() {
     return {
-      scroll:null
-    }
+      scroll: null,
+      goods: {
+        pop: { page: 0, list: [] },
+        new: { page: 0, list: [] },
+        sell: { page: 0, list: [] },
+      },
+      goodsType: "pop",
+      miniWallkey: "10062603",
+      isFixed: false,
+      tabControlTop: 0,
+      throttleTest: null,
+    };
+  },
+  components: {
+    NavBar,
+    Scroll,
+    CategoryNavSide,
+    CategoryGoodsContent,
+    TabControl,
+    GoodsList,
+  },
+  computed: {
+    showGoods() {
+      return this.goods[this.goodsType].list;
+    },
+  },
+  created() {
+    // 2.请求商品数据
+    // this.getGoodsInfo("pop");
+    // this.getGoodsInfo("new");
+    // this.getGoodsInfo("sell");
+    this.getGoodsInfo("10062603", "pop");
+    this.getGoodsInfo("10062603", "sell");
+    this.getGoodsInfo("10062603", "new");
+  },
+  mounted() {},
+  methods: {
+    // 侧边栏点击切换maitKey和miniWallkey对应显示不同内容
+    keyChange(keys) {
+      this.$refs.goodsCategory.maitKey = keys[0];
+      this.miniWallkey = keys[1];
+    },
+    getGoodsInfo(miniWallkey, type) {
+      getGoodsInfo(miniWallkey, type).then((res) => {
+        this.goods[type].list = res;
+
+        // 调用scroll组件的finishPullUp方法再次请求数据
+        // this.$refs.scroll.finishPullUp();
+        this.$refs.scroll.refresh();
+      });
+    },
+    contentScroll(position) {
+      // this.isShow = -position.y > 1000;
+      // 通过v-show决定tabControl是否显示
+      this.throttleTest();
+      this.isFixed = this.tabControlTop < -position.y;
+    },
+    changeGoodsType(index) {
+      switch (index) {
+        case 0:
+          this.goodsType = "pop";
+          break;
+        case 1:
+          this.goodsType = "new";
+          break;
+        case 2:
+          this.goodsType = "sell";
+          break;
+      }
+      this.$refs.tabControl1.currentIndex = index;
+      this.$refs.tabControl2.currentIndex = index;
+    },
+    imgLoad() {
+      // 防流函数拿高度
+      this.throttleTest = throttle(function () {
+        this.tabControlTop = this.$refs.tabControl2.$el.offsetTop;
+        this.$refs.scroll.refresh();
+      }, 10000);
+      this.tabControlTop = this.$refs.tabControl2.$el.offsetTop;
+    },
+    // getGoodsInfo(type) {
+    //   const page = this.goods[type].page + 1;
+    //   getGoodsInfo(type, page).then((res) => {
+    //     this.goods[type].list.push(...res.data.list);
+    //     this.goods[type].page += 1;
+
+    //     // 调用scroll组件的finishPullUp方法再次请求数据
+    //     this.$refs.scroll.finishPullUp();
+    //     this.$refs.scroll.refresh();
+    //   });
+    // },
   },
   mounted() {
-    this.scroll = new BScroll(document.querySelector('.wrapper'),{
-      probeType: 3
-    });
-    this.scroll.on('scroll', position => {
-      console.log(position);
-    })
+    console.log(11);
+    this.$refs.scroll.refresh();
+    // console.log(222222);
   },
-}
+  activated() {
+    this.$refs.scroll.refresh();
+    console.log("好");
+  },
+  watch: {
+    miniWallkey: function (val) {
+      this.getGoodsInfo(val, "pop");
+      this.getGoodsInfo(val, "sell");
+      this.getGoodsInfo(val, "new");
+    },
+  },
+};
 </script>
 
 <style  scoped>
-.wrapper{
-  height: 150px;
-  background-color: blanchedalmond;
+.container {
+  height: calc(100vh - 98px);
+  display: flex;
+}
+.nav-side {
+  height: 100%;
+  width: 100px;
+  background-color: rgb(230, 243, 242);
   overflow: hidden;
+  text-align: center;
+}
+.tab-flexible {
+  position: fixed;
+  background-color: white;
+  height: 44px;
+  width: calc(100vw - 100px);
+  top: 44px;
+  right: 0;
+}
+.category-nav {
+  background-color: var(--color-tint);
+  color: #fff;
+}
+
+.goods-category {
+  flex: 1;
+  height: 100%;
+  width: 100px;
+  background-color: white;
+  overflow: hidden;
+  text-align: center;
 }
 </style>
